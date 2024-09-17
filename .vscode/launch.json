@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code",
-      "program": "c:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code/build/Debug/outDebug",
+      "cwd": "C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code",
+      "program": "C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code/main.exe",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
