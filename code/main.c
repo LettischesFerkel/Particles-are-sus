@@ -29,7 +29,7 @@ int init()
     clearScreen(64);
 }
 
-calculate()
+int calculate()
 {
     int result = 0;
     for(int y = 0; y < windowHeight; y++)
