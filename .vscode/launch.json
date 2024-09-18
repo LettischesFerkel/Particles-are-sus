@@ -11,7 +11,7 @@
       "cwd": "C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code",
       "program": "C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code/main.exe",
       "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
+      "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
