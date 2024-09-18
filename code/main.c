@@ -47,8 +47,8 @@ int calculate()
 
 int update()
 {
-    clearScreen(64);
-    calculate();
+    clearScreen(178);
+    //calculate();
     drawScreen();
     fgets(&output[0], 64, stdin);
     running = 0;
