@@ -1,68 +1,52 @@
-#include <stdio.h>
+#define UNITY_BUILD 1
+#include <stdio.h>              // IWYU pragma: keep
+#ifdef _WIN64
+ #include <SDL.h>
+#else
+ #include <SDL2/SDL.h>
+#endif
+#include "common.h"
+#include "sdl_utils.h"
 
-int running = 1;
+char inputBuffer[65];
 
-#define windowWidth 208
-#define windowHeight 54
-char window[windowHeight][windowWidth];
-
-char output[65];
-
-int drawScreen()
+int initWindow()
 {
-    printf("\n--------------------------------\n%s\n--------------------------------\n", window);
-}
-int clearScreen(char filler)
-{
-    for(int y = 0; y < windowHeight; y++)
-    {
-        for(int x = 0; x < windowWidth-1; x++)
-        {
-            window[y][x] = filler;
-        }
-        window[y][windowWidth-1] = '\n';
-        if(y == windowHeight-1) { window[windowHeight-1][windowWidth-1] = '\0'; }
-    }
-}
-int init()
-{
-    clearScreen(64);
-}
-
-int calculate()
-{
-    int result = 0;
-    for(int y = 0; y < windowHeight; y++)
-    {
-        for(int x = 0; x < windowWidth-1; x++)
-        {
-            result = 0;
-            result = (((x - y) + 0.5) >= 0) && (((x - y) - 0.5) <= 0);
-            window[y][x] = result * 64;
-        }
-        window[y][windowWidth-1] = '\n';
-        if(y == windowHeight-1) { window[windowHeight-1][windowWidth-1] = '\0'; }
-    }
-}
-
-int update()
-{
-    clearScreen(64);
-    calculate();
-    drawScreen();
-    fgets(&output[0], 64, stdin);
-    running = 0;
+    
 }
 
 int main()
 {
-    printf("Amogus is sus\n");
-
-    init();
-    while(running)
-    {
-        update();
-    }
-
+    inputBuffer[64] = '\0';
+    printf("The Sus has arised.");
+    fgets(&inputBuffer[0], 64, stdin);
     return 1;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    // Init SDL without texture filtering for better pixelart results
+    if (sdl_utils_Init("SDL Tutorial", &window, &renderer, 0)) 
+    {
+        SDL_Texture* texture = IMG_LoadTexture(renderer, "res/characters.png");
+        
+        // Sprite source rectangle
+        SDL_Rect srcRect = {9, 42, 15, 21};
+        // Target rectangle (note that we will paint it at x4 its original size)
+        SDL_Rect destRect = {0, 0, srcRect.w * 4, srcRect.h * 4};
+        while (1)
+        {
+            SDL_RenderClear(renderer);
+            SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+            SDL_RenderPresent(renderer);
+
+            SDL_Event event;
+            if (SDL_PollEvent(&event))
+            {
+                if (event.type == SDL_QUIT) break;
+            } 
+        }
+
+        SDL_DestroyTexture(texture);		
+    }
+    sdl_utils_Quit(window, renderer);
+    return 0;
 }
