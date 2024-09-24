@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, 0);
+    SDL_Window *window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1, 200, 0);
 
     if(!window)
     {
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     SDL_Delay(5000);
     inputBuffer[64] = '\0';
     printf("The Sus has arised.");
+    char* susBuffer = malloc(5000000000);
     printf("\nProccess done");
     fgets(&inputBuffer[0], 64, stdin);
 
