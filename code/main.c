@@ -18,6 +18,19 @@ int initWindow()
     
 }
 
+char* hoard(int megabytes)
+{
+    int bytes = megabytes * 1000000;
+    char* susBuffer = malloc(bytes);
+    for (int n = 0; n < bytes; n++)
+    {
+        if(!(n%1000000)) { printf("Nu neticēsi: %3.8f% ; %4.1fMB\n", ((float)n)/bytes*100, ((float)n)/megabytes); }
+        *(susBuffer+n) = (n%256);
+    }
+    printf("\nHoarded %f megabytes", megabytes);
+    return susBuffer;
+}
+
 int main(int argc, char *argv[])
 {
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -47,7 +60,11 @@ int main(int argc, char *argv[])
     SDL_Delay(5000);
     inputBuffer[64] = '\0';
     printf("The Sus has arised.");
-    char* susBuffer = malloc(5000000000);
+    char* susBuffer[10];
+    for (int n = 0; n < 160; n++)
+    {
+        susBuffer[n] = hoard(111);
+    }
     printf("\nProccess done");
     fgets(&inputBuffer[0], 64, stdin);
 
