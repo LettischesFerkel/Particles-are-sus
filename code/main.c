@@ -10,8 +10,8 @@
  #include <SDL2/SDL.h>
  #include <SDL2/SDL_image.h>
 #endif
-#include "C:\Users\karlis.svaza\Documents\Sigma mindset\Particles-are-SUS\Particles-are-sus\sdl-vscode-c-cpp\common.h"
-#include "C:\Users\karlis.svaza\Documents\Sigma mindset\Particles-are-SUS\Particles-are-sus\sdl-vscode-c-cpp\sdl_utils.h"
+#include "..\sdl-vscode-c-cpp\common.h"
+#include "..\sdl-vscode-c-cpp\sdl_utils.h"
 #include <stdlib.h>
 
 char inputBuffer[65];
