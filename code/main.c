@@ -118,6 +118,24 @@ int physicsUpdate(double deltaTime)
         // apply acceleration;
         maksimilianaKungs[i].vy = maksimilianaKungs[i].vy - (gravitate * deltaTime); // gravitate
 
+        // neticēsi
+        for (int n = 0; n < partikles; n++)
+        {
+            if (n == i) { break; }
+            float dist = sqrt(pow(maksimilianaKungs[n].x, 2) + pow(maksimilianaKungs[n].x, 2)) - sqrt(pow(maksimilianaKungs[i].x, 2) + pow(maksimilianaKungs[i].x, 2));
+            
+            if ((maksimilianaKungs[i].r + maksimilianaKungs[n].x) > dist) { break; }
+            else
+            {
+                float dX = maksimilianaKungs[n].x - maksimilianaKungs[i].x;
+                float dY = maksimilianaKungs[n].y - maksimilianaKungs[i].y;
+                float dVX = maksimilianaKungs[n].vx - maksimilianaKungs[i].vx;
+                float dVY = maksimilianaKungs[n].vy - maksimilianaKungs[i].vy;
+                float rUX = 1; // X of Unit vector of perpendicular collision
+                float rUY = 0; // Y of Unit vector of perpendicular collision
+            }
+        }
+
         maksimilianaKungs[i].x = maksimilianaKungs[i].x + (maksimilianaKungs[i].vx * deltaTime);
         maksimilianaKungs[i].y = maksimilianaKungs[i].y + (maksimilianaKungs[i].vy * deltaTime);
 
