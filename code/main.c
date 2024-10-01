@@ -18,7 +18,10 @@ char inputBuffer[65];
 
 SDL_Window* window;
 SDL_Surface* window_surface;
+SDL_Renderer* renderer;
 SDL_Rect windowDimensions;
+
+SDL_Surface* rawWindow;
 
 int keep_window_open = 1;
 
@@ -44,28 +47,39 @@ typedef struct {
     float y;
 }vector2f;
 const vector2f nullVector2f = {0, 0};
-#define partikles 500000
+#define partikles 500
 const int collisionsEnabled = 0;
+const int gravitateStarpMumsEksiste = 1;
+const int centraGravitateEksiste = 1;
 
-const double gravitate = -50;
-const float temperatura = 25; // pikseļos/sekundē obv
+const float gravitatesKonstante = 1;
+const float centraGravitatesKonstante = 10000;
+const float centraRadiuss = 100;
+
+const double gravitate = 0;
+const float temperatura = 1; // pikseļos/sekundē obv
 
 particle maksimilianaKungs[partikles]; // partikāļi
-particle imageDefParticle = { 0, 0, 0, 0, 1, 1, 0 };
+particle imageDefParticle = { 0, 0, 0, 0, 1, 1, 2 };
 vector2f imageSize = {200, 200};
+
+double maxSpeed = 1;
 
 float vektorMagnitude(vector2f vektor)
 {
     return sqrt(pow(vektor.x, 2) + pow(vektor.y, 2));
 }
+float vektorMagnitudeSquared(vector2f vektor)
+{
+    return pow(vektor.x, 2) + pow(vektor.y, 2);
+}
 vector2f normaliseVektor(vector2f unnormalVecotr, float desiredMagnitude)
 {
     float magnitude = vektorMagnitude(unnormalVecotr);
     if (magnitude == 0) { return nullVector2f; }
-    float relativeMagnitude = desiredMagnitude / magnitude;
     vector2f result;
-    result.x = unnormalVecotr.x * relativeMagnitude;
-    result.y = unnormalVecotr.y * relativeMagnitude;
+    result.x = unnormalVecotr.x / magnitude;
+    result.y = unnormalVecotr.y / magnitude;
     return result;
 }
 SDL_Surface* loadBMPImage(char* adress)
@@ -79,7 +93,13 @@ SDL_Surface* loadBMPImage(char* adress)
     }
     return img;
 }
-
+void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+{
+  Uint32 * const target_pixel = (Uint32 *) ((Uint8 *) surface->pixels
+                                             + y * surface->pitch
+                                             + x * surface->format->BytesPerPixel);
+  *target_pixel = pixel;
+}
 int start()
 {
     image = loadBMPImage("res/zalsApalsStarpMums.bmp");
@@ -182,6 +202,49 @@ int physicsUpdate(double deltaTime)
                 }
             }
         }
+        if (gravitateStarpMumsEksiste)
+        {
+            int calcd[partikles];
+            for (int n = 0; n < partikles; n++) { calcd[n] = 0; }
+            float calcdX[partikles];
+            float calcdY[partikles];
+            particle currentI = maksimilianaKungs[i];
+
+            if (centraGravitateEksiste)
+            {
+                vector2f deltaPos = { windowDimensions.w/2 - currentI.x, windowDimensions.h/2 - currentI.y };
+                float distanceSquared = vektorMagnitudeSquared(deltaPos);
+                if (distanceSquared == 0) { deltaPos = nullVector2f; distanceSquared = 1;}
+                if (distanceSquared < pow((currentI.d/2 + centraRadiuss), 2)) { distanceSquared = pow((currentI.d/2 + centraRadiuss), 2); } // spēka klampācija līdz rādiusam
+                vector2f forceDirection = normaliseVektor(deltaPos, 1);
+                float forceMultiplier = centraGravitatesKonstante / distanceSquared;
+                maksimilianaKungs[i].vx += forceDirection.x * forceMultiplier;
+                maksimilianaKungs[i].vy += forceDirection.y * forceMultiplier;
+            }
+
+            for (int n = 0; n < partikles; n++)
+            {
+
+                particle currentN = maksimilianaKungs[n];
+                if (calcd[n])
+                {
+                    maksimilianaKungs[i].vx -= calcdX[n];
+                    maksimilianaKungs[i].vy -= calcdY[n];
+                    continue;
+                }
+                vector2f deltaPos = { currentN.x - currentI.x, currentN.y - currentI.y };
+                float distanceSquared = vektorMagnitudeSquared(deltaPos);
+                if (distanceSquared == 0) { deltaPos = nullVector2f; distanceSquared = 1;}
+                if (distanceSquared < pow((currentI.d/2 + currentN.d/2), 2)) { distanceSquared = pow((currentI.d/2 + currentN.d/2), 2); } // spēka klampācija līdz rādiusam
+                vector2f forceDirection = normaliseVektor(deltaPos, 1);
+                float forceMultiplier = gravitatesKonstante / distanceSquared;
+                calcdX[i] = forceDirection.x * forceMultiplier;
+                calcdY[i] = forceDirection.y * forceMultiplier;
+                calcd[i] = 1;
+                maksimilianaKungs[i].vx += calcdX[i];
+                maksimilianaKungs[i].vy += calcdY[i];
+            }
+        }
     }
 }
 SDL_Rect partikleTuRekt(particle target)
@@ -208,14 +271,45 @@ int update(double deltaTime)
     //if (deltaTime != (double)0) { printf("Amogus = ( %6.1f, %6.1f )\n", maksimilianaKungs[0].x, maksimilianaKungs[0].y); }
     physicsUpdate(deltaTime);
 
-    SDL_Rect imgPrtcle;
+    /*SDL_Rect imgPrtcle;
     SDL_Rect wndPrtclis;
     for (int i = 0; i < partikles; i++)
     {
         imgPrtcle = partikleTuRekt(maksimilianaKungs[i]);
         wndPrtclis = vektorTuRekt(imageSize);
         SDL_BlitScaled(imageDzeltens, &wndPrtclis, window_surface, &imgPrtcle);
+    }*/
+   
+    /*printf("Before to lock rawWindow\n");
+    if (!SDL_LockSurface(rawWindow)) { printf("Failed to lock rawWindow\n"); }
+    printf("Succeded to lock rawWindow\n");
+
+    Uint32 pixel = 0xffffffff;
+    for (int i = 0; i < partikles; i++)
+    {
+        particle current = maksimilianaKungs[i];
+        set_pixel(rawWindow, (int)current.x, (int)current.y, pixel);
     }
+
+    SDL_UnlockSurface(rawWindow);*/
+    
+    double maxSpeedCurrent;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    for (int i = 1; i < partikles; i++)
+    {
+        particle current = maksimilianaKungs[i];
+        vector2f speedVec = { current.vx, current.vy };
+        double speed = vektorMagnitude(speedVec);
+        if (speed > maxSpeedCurrent) { maxSpeedCurrent = speed; }
+        SDL_SetRenderDrawColor(renderer, 255, ((int)(255 * speed / maxSpeed)%256), 255, 255);
+        SDL_RenderDrawPoint(renderer, (int)current.x, (int)current.y);
+    }
+    maxSpeed = maxSpeedCurrent;
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawPoint(renderer, (int)maksimilianaKungs[0].x, (int)maksimilianaKungs[0].y);
+    SDL_RenderPresent(renderer);
 }
 int processEvent(int eventType)
 {
@@ -242,6 +336,7 @@ int initWindow()
     }
 
     window = SDL_CreateWindow("Melnums", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowDimensions.w, windowDimensions.h, 0);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if(!window)
     {
@@ -297,10 +392,10 @@ int main(int argc, char *argv[])
         {
             processEvent(e.type);
         }
-        SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
+        //SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
         update(0.01667);
         //SDL_Wait(500);
-        SDL_UpdateWindowSurface(window);
+        //SDL_UpdateWindowSurface(window);
         QueryPerformanceCounter(&t2);
         elapsedTime = (t2.QuadPart - t1.QuadPart) / frequency.QuadPart;
         i++;
@@ -308,7 +403,9 @@ int main(int argc, char *argv[])
     }
 
     SDL_FreeSurface(window_surface);
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_Quit();
 
     //SDL_Delay(5000);
     inputBuffer[64] = '\0';
@@ -316,4 +413,7 @@ int main(int argc, char *argv[])
 
     return 1;
     return 0;
+
+    /**/
+    return EXIT_SUCCESS;
 }
