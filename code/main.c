@@ -44,13 +44,14 @@ typedef struct {
     float y;
 }vector2f;
 const vector2f nullVector2f = {0, 0};
-#define partikles 10
+#define partikles 500000
+const int collisionsEnabled = 0;
 
-const double gravitate = -10;
-const float temperatura = 100; // pikseļos/sekundē obv
+const double gravitate = -50;
+const float temperatura = 25; // pikseļos/sekundē obv
 
 particle maksimilianaKungs[partikles]; // partikāļi
-particle imageDefParticle = { 0, 0, 0, 0, 200, 200, 200 };
+particle imageDefParticle = { 0, 0, 0, 0, 1, 1, 0 };
 vector2f imageSize = {200, 200};
 
 float vektorMagnitude(vector2f vektor)
@@ -118,24 +119,6 @@ int physicsUpdate(double deltaTime)
         // apply acceleration;
         maksimilianaKungs[i].vy = maksimilianaKungs[i].vy - (gravitate * deltaTime); // gravitate
 
-        // neticēsi
-        for (int n = 0; n < partikles; n++)
-        {
-            if (n == i) { break; }
-            float dist = sqrt(pow(maksimilianaKungs[n].x, 2) + pow(maksimilianaKungs[n].x, 2)) - sqrt(pow(maksimilianaKungs[i].x, 2) + pow(maksimilianaKungs[i].x, 2));
-            
-            if ((maksimilianaKungs[i].r + maksimilianaKungs[n].x) > dist) { break; }
-            else
-            {
-                float dX = maksimilianaKungs[n].x - maksimilianaKungs[i].x;
-                float dY = maksimilianaKungs[n].y - maksimilianaKungs[i].y;
-                float dVX = maksimilianaKungs[n].vx - maksimilianaKungs[i].vx;
-                float dVY = maksimilianaKungs[n].vy - maksimilianaKungs[i].vy;
-                float rUX = 1; // X of Unit vector of perpendicular collision
-                float rUY = 0; // Y of Unit vector of perpendicular collision
-            }
-        }
-
         maksimilianaKungs[i].x = maksimilianaKungs[i].x + (maksimilianaKungs[i].vx * deltaTime);
         maksimilianaKungs[i].y = maksimilianaKungs[i].y + (maksimilianaKungs[i].vy * deltaTime);
 
@@ -160,6 +143,44 @@ int physicsUpdate(double deltaTime)
         {
             maksimilianaKungs[i].x = 0;
             maksimilianaKungs[i].vx = -maksimilianaKungs[i].vx;
+        }
+
+        // neticēsi
+
+        if (collisionsEnabled)
+        {
+            int calcd[partikles];
+            for (int n = 0; n < partikles; n++) { calcd[n] = 0; }
+            for (int n = 0; n < partikles; n++)
+            {
+                if ((n != i) && !(calcd[i] && calcd[n]))
+                {
+                    float dist = sqrt(pow(maksimilianaKungs[n].x, 2) + pow(maksimilianaKungs[n].x, 2)) - sqrt(pow(maksimilianaKungs[i].x, 2) + pow(maksimilianaKungs[i].x, 2));
+                    if ((maksimilianaKungs[i].d/2 + maksimilianaKungs[n].d/2) <= dist)
+                    {
+                        float posDX = maksimilianaKungs[i].x - maksimilianaKungs[n].x;
+                        float posDY = maksimilianaKungs[i].y - maksimilianaKungs[n].y;
+                        float dX = maksimilianaKungs[i].vx - maksimilianaKungs[n].vx;
+                        float dY = maksimilianaKungs[i].vy - maksimilianaKungs[n].vy;
+                        float pX = -posDY; // X of Vector perpendicular of collision
+                        float pY = posDX; // Y of Vector perpendicular of collision
+
+                        float o1 = (dX * pX) + (dY * pY);
+                        float gX = (o1 * pX) / (pow(pX, 2) * pow(pY, 2));
+                        float gY = (o1 * pY) / (pow(pX, 2) * pow(pY, 2));
+                        maksimilianaKungs[i].vx = maksimilianaKungs[i].vx + gX;
+                        maksimilianaKungs[i].vy = maksimilianaKungs[i].vy + gY;
+                        calcd[i] = 1;
+
+                        float o2 = (dX * -pY) + (dY * pX);
+                        float bX = (o2 * pX) / (pow(pX, 2) * pow(pY, 2));
+                        float bY = (o2 * pY) / (pow(pX, 2) * pow(pY, 2));
+                        maksimilianaKungs[n].vx = maksimilianaKungs[n].vx + gX;
+                        maksimilianaKungs[n].vy = maksimilianaKungs[n].vy + gY;
+                        calcd[n] = 1;
+                    }
+                }
+            }
         }
     }
 }
@@ -193,7 +214,7 @@ int update(double deltaTime)
     {
         imgPrtcle = partikleTuRekt(maksimilianaKungs[i]);
         wndPrtclis = vektorTuRekt(imageSize);
-        SDL_BlitSurface(imageDzeltens, &wndPrtclis, window_surface, &imgPrtcle);
+        SDL_BlitScaled(imageDzeltens, &wndPrtclis, window_surface, &imgPrtcle);
     }
 }
 int processEvent(int eventType)
