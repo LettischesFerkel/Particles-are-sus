@@ -47,14 +47,20 @@ typedef struct {
     float y;
 }vector2f;
 const vector2f nullVector2f = {0, 0};
+
 #define partikles 500
+
 const int collisionsEnabled = 0;
 const int gravitateStarpMumsEksiste = 1;
-const int centraGravitateEksiste = 1;
+const int centraGravitateEksiste = 0;
+const int pretestibaEksiste = 1;
 
-const float gravitatesKonstante = 1;
+const float gravitatesKonstante = 10;
 const float centraGravitatesKonstante = 10000;
 const float centraRadiuss = 100;
+const float pretestibasKonstante = 1;
+
+
 
 const double gravitate = 0;
 const float temperatura = 1; // pikseļos/sekundē obv
@@ -80,6 +86,21 @@ vector2f normaliseVektor(vector2f unnormalVecotr, float desiredMagnitude)
     vector2f result;
     result.x = unnormalVecotr.x / magnitude;
     result.y = unnormalVecotr.y / magnitude;
+    return result;
+}
+vector2f negativeVektor(vector2f input)
+{
+    vector2f result = { -input.x, -input.y };
+    return result;
+}
+vector2f addVektors(vector2f a, vector2f b)
+{
+    vector2f result = { a.x + b.x, a.y + b.y };
+    return result;
+}
+vector2f coefficientVektor(vector2f a, float coefficient)
+{
+    vector2f result = { a.x * coefficient, a.y * coefficient };
     return result;
 }
 SDL_Surface* loadBMPImage(char* adress)
@@ -136,6 +157,13 @@ int physicsUpdate(double deltaTime)
 {
     for (int i = 0; i < partikles; i++)
     {
+        if (pretestibaEksiste) // apply drag
+        {
+            vector2f velocity = { maksimilianaKungs[i].vx, maksimilianaKungs[i].vy };
+            float speedSquared = vektorMagnitudeSquared(velocity);
+            vector2f dragForceDirection = normaliseVektor(negativeVektor(velocity), 1);
+            
+        }
         // apply acceleration;
         maksimilianaKungs[i].vy = maksimilianaKungs[i].vy - (gravitate * deltaTime); // gravitate
 
