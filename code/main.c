@@ -48,22 +48,22 @@ typedef struct {
 }vector2f;
 const vector2f nullVector2f = {0, 0};
 
-#define partikles 500
+#define partikles 30000
 
 const int collisionsEnabled = 0;
-const int gravitateStarpMumsEksiste = 1;
-const int centraGravitateEksiste = 0;
+const int gravitateStarpMumsEksiste = 0;
+const int centraGravitateEksiste = 1;
 const int pretestibaEksiste = 1;
 
 const float gravitatesKonstante = 10;
-const float centraGravitatesKonstante = 10000;
-const float centraRadiuss = 100;
+const float centraGravitatesKonstante = 10;
+const float centraRadiuss = 10;
 const float pretestibasKonstante = 1;
 
 
 
 const double gravitate = 0;
-const float temperatura = 1; // pikseļos/sekundē obv
+const float temperatura = 0; // pikseļos/sekundē obv
 
 particle maksimilianaKungs[partikles]; // partikāļi
 particle imageDefParticle = { 0, 0, 0, 0, 1, 1, 2 };
@@ -230,6 +230,20 @@ int physicsUpdate(double deltaTime)
                 }
             }
         }
+
+        if (centraGravitateEksiste)
+        {
+            particle currentI = maksimilianaKungs[i];
+            vector2f deltaPos = { windowDimensions.w/2 - currentI.x, windowDimensions.h/2 - currentI.y };
+            float distanceSquared = vektorMagnitudeSquared(deltaPos);
+            if (distanceSquared == 0) { deltaPos = nullVector2f; distanceSquared = 1;}
+            if (distanceSquared < pow((currentI.d/2 + centraRadiuss), 2)) { distanceSquared = pow((currentI.d/2 + centraRadiuss), 2); } // spēka klampācija līdz rādiusam
+            vector2f forceDirection = normaliseVektor(deltaPos, 1);
+            float forceMultiplier = centraGravitatesKonstante / distanceSquared;
+            maksimilianaKungs[i].vx += forceDirection.x * forceMultiplier;
+            maksimilianaKungs[i].vy += forceDirection.y * forceMultiplier;
+        }
+
         if (gravitateStarpMumsEksiste)
         {
             int calcd[partikles];
@@ -238,17 +252,17 @@ int physicsUpdate(double deltaTime)
             float calcdY[partikles];
             particle currentI = maksimilianaKungs[i];
 
-            if (centraGravitateEksiste)
-            {
-                vector2f deltaPos = { windowDimensions.w/2 - currentI.x, windowDimensions.h/2 - currentI.y };
-                float distanceSquared = vektorMagnitudeSquared(deltaPos);
-                if (distanceSquared == 0) { deltaPos = nullVector2f; distanceSquared = 1;}
-                if (distanceSquared < pow((currentI.d/2 + centraRadiuss), 2)) { distanceSquared = pow((currentI.d/2 + centraRadiuss), 2); } // spēka klampācija līdz rādiusam
-                vector2f forceDirection = normaliseVektor(deltaPos, 1);
-                float forceMultiplier = centraGravitatesKonstante / distanceSquared;
-                maksimilianaKungs[i].vx += forceDirection.x * forceMultiplier;
-                maksimilianaKungs[i].vy += forceDirection.y * forceMultiplier;
-            }
+            // if (centraGravitateEksiste)
+            // {
+            //     vector2f deltaPos = { windowDimensions.w/2 - currentI.x, windowDimensions.h/2 - currentI.y };
+            //     float distanceSquared = vektorMagnitudeSquared(deltaPos);
+            //     if (distanceSquared == 0) { deltaPos = nullVector2f; distanceSquared = 1;}
+            //     if (distanceSquared < pow((currentI.d/2 + centraRadiuss), 2)) { distanceSquared = pow((currentI.d/2 + centraRadiuss), 2); } // spēka klampācija līdz rādiusam
+            //     vector2f forceDirection = normaliseVektor(deltaPos, 1);
+            //     float forceMultiplier = centraGravitatesKonstante / distanceSquared;
+            //     maksimilianaKungs[i].vx += forceDirection.x * forceMultiplier;
+            //     maksimilianaKungs[i].vy += forceDirection.y * forceMultiplier;
+            // }
 
             for (int n = 0; n < partikles; n++)
             {
@@ -328,10 +342,10 @@ int update(double deltaTime)
     for (int i = 1; i < partikles; i++)
     {
         particle current = maksimilianaKungs[i];
-        vector2f speedVec = { current.vx, current.vy };
-        double speed = vektorMagnitude(speedVec);
-        if (speed > maxSpeedCurrent) { maxSpeedCurrent = speed; }
-        SDL_SetRenderDrawColor(renderer, 255, ((int)(255 * speed / maxSpeed)%256), 255, 255);
+        //vector2f speedVec = { current.vx, current.vy };
+        //double speed = vektorMagnitude(speedVec);
+        //if (speed > maxSpeedCurrent) { maxSpeedCurrent = speed; }
+        //SDL_SetRenderDrawColor(renderer, 255, ((int)(255 * speed / maxSpeed)%256), 255, 255);
         SDL_RenderDrawPoint(renderer, (int)current.x, (int)current.y);
     }
     maxSpeed = maxSpeedCurrent;
@@ -406,7 +420,7 @@ int main(int argc, char *argv[])
     printf("The Sus has arised.\n\n");
     vector2f test = {40, 40};
     printf("vektor = (%f, %f) ; |vektor| = %f\n", test.x, test.y, vektorMagnitude(test));
-    test = normaliseVektor(test, 100);
+    test = normaliseVektor(test, 0);
     printf("norm(vektor) = (%f, %f) ; |norm(vektor)| = %f\n\n", test.x, test.y, vektorMagnitude(test));
     initWindow();
     start();
