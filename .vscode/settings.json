@@ -57,6 +57,11 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
-    "functional": "c"
+    "functional": "c",
+    "amogus.h": "c",
+    "sdl_utils.h": "c",
+    "stdbool.h": "c",
+    "stdlib.h": "c",
+    "common.h": "c"
   }
 }

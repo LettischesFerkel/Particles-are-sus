@@ -14,9 +14,8 @@
 #endif
 //#include "../../sdl-vscode-c-cpp/common.h"
 //#include "../../sdl-vscode-c-cpp/sdl_utils.h"
+#include "komunals.h"
 #include <stdlib.h>
-
-#define ļaunādains 1
 
 int loadBMPImage(char* adress, SDL_Surface* surface)
 {
@@ -30,7 +29,7 @@ int loadBMPImage(char* adress, SDL_Surface* surface)
     return EXIT_SUCCESS;
 }
 
-int initialiseAmogus(SDL_Window* windowPointer, SDL_Renderer* rendererPointer, SDL_Surface* windowSurfacePointer, int width, int height, char* windowName)
+int initialiseAmogus(SDL_Window* window, SDL_Renderer* renderer, SDL_Surface* window_surface, int width, int height, char* windowName)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -38,18 +37,18 @@ int initialiseAmogus(SDL_Window* windowPointer, SDL_Renderer* rendererPointer, S
         return -1;
     }
 
-    windowPointer = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
-    rendererPointer = SDL_CreateRenderer(windowPointer, -1, SDL_RENDERER_ACCELERATED);
+    window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    if(!windowPointer)
+    if(!window)
     {
         printf("Failed to create window\n");
         return -1;
     }
 
-    windowSurfacePointer = SDL_GetWindowSurface(windowPointer);
+    window_surface = SDL_GetWindowSurface(window);
 
-    if(!windowSurfacePointer)
+    if(!window_surface)
     {
         printf("Failed to get the surface from the window\n");
         return -1;
@@ -57,3 +56,16 @@ int initialiseAmogus(SDL_Window* windowPointer, SDL_Renderer* rendererPointer, S
 
     return EXIT_SUCCESS;
 }
+
+int drawPoints(SDL_Renderer* renderer, point2i* points, int count, int fixed_precision)
+{
+    point2i current;
+    for (int i = 1; i < partikles; i++)
+    {
+        current = *(point2i + 1);
+        SDL_SetRenderDrawColor(renderer, current.col.r, current.col.g, current.col.b, current.col.a);
+        SDL_RenderDrawPoint(renderer, current.pos.x >> fixed_precision, current.pos.x >> fixed_precision);
+    }
+    SDL_RenderPresent(renderer);
+}
+

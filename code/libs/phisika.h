@@ -1,16 +1,7 @@
 #pragma once
 
 #include <math.h>
-
-#define FIXED_PRECISION 16
-
-
-typedef struct // intager vektor
-{
-    int x;
-    int y;
-}vektor2i;
-const vektor2i nullVector2f = { 0, 0 };
+#include "komunals.h"
 
 vektor2i addVektors2I(vektor2i vektorA, vektor2i vektorB) // vektorA + vektorB
 {
@@ -40,4 +31,17 @@ vektor2i normaliseVektor2I(int scalar, vektor2i vektor)
 {
     int length = (int)sqrt((vektor.x * vektor.x) + (vektor.y * vektor.y));
     return (vektor2i){ (vektor.x * scalar) / length, (vektor.y * scalar) / length };
+}
+
+vektor2i randomDirectionVektor2I(int length, int angle_precision)
+{
+    double radians = (((double)(rand() % (360 << angle_precision)) >> fixed_precision) * PI) / 180.0;
+    vektor2i result = { (int)((double)length * cos(radians)), (int)((double)length * sin(radians)) };
+    return result;
+}
+
+vektor2i transformUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoords)
+{
+    vektor2i result;
+    result.x = 
 }

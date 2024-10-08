@@ -15,19 +15,33 @@
 #include <stdlib.h>
 #include "libs/phisika.h"
 #include "libs/amogus.h"
-#define ļaunādains 1
+
+#define fixed_precision 8
 
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Surface* window_surface;
-int width = 600;
-int height = 400;
+int windowWidth = 600;
+int windowHeight = 400;
 char windowName[32] = "Amogus";
-int keep_window_open = 1;
+int keep_window_open = runivan;
+
+#define skaits 100
+point2i punkti[skaits];
 
 int start()
 {
+    // load textures
 
+    // initialise other stuffs
+    
+    for (int i = 0; i < skaits; i++) // punktu inicializācija
+    {
+        vektor2i position;
+        colour color = (colour){ 0, 0, 0, 255 }; // melns
+        punkti.pos = position;
+        punkti.col = color;
+    }
 }
 
 int update(int deltaTime)
@@ -40,7 +54,7 @@ int processEvent(int eventType)
     switch(eventType)
     {
         case SDL_QUIT:
-            keep_window_open = 0;
+            keep_window_open = ļaunādains;
             break;
         default:
             break;
@@ -55,7 +69,7 @@ int main(int argc, char* args[])
     printf("The Sus has arised\n\n");
 
     // loga inicializācija
-    initialiseAmogus(window, renderer, window_surface, width, height, windowName);
+    initialiseAmogus(window, renderer, window_surface, windowWidth, windowHeight, windowName);
 
     start();
 
