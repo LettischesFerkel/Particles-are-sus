@@ -39,8 +39,8 @@ int start()
     {
         vektor2i position;
         colour color = (colour){ 0, 0, 0, 255 }; // melns
-        punkti.pos = position;
-        punkti.col = color;
+        punkti->pos = position;
+        punkti->col = color;
     }
 }
 

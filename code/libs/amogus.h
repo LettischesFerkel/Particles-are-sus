@@ -60,12 +60,16 @@ int initialiseAmogus(SDL_Window* window, SDL_Renderer* renderer, SDL_Surface* wi
 int drawPoints(SDL_Renderer* renderer, point2i* points, int count, int fixed_precision)
 {
     point2i current;
-    for (int i = 1; i < partikles; i++)
+    for (int i = 1; i < count; i++)
     {
-        current = *(point2i + 1);
+        current = *(points + count);
         SDL_SetRenderDrawColor(renderer, current.col.r, current.col.g, current.col.b, current.col.a);
         SDL_RenderDrawPoint(renderer, current.pos.x >> fixed_precision, current.pos.x >> fixed_precision);
     }
     SDL_RenderPresent(renderer);
 }
 
+int drawLine(int height, int xPixel)
+{
+    
+}
