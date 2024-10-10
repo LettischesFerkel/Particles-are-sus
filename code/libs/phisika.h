@@ -108,10 +108,41 @@ int volfensteinDstFunction(worldMapVPPLM map, vektor2i viewpoint, vektor2i direc
         {
             for (int i = 0; i < size; i++)
             {
-                if (coords[i].y < viewpoint.y)
+                if (abs(coords[size - i - 1].y) < viewpoint.y) // hit found
                 {
+                    // find coordiantes of ray hit
+                    vektor2i hitPos = { posX, coords[size - i - 1].y };
+
+                    // find closest perpendicular lines
+                    int hitLess = 0;
+                    int hitGreater = 0;
+                    if (abs(coords[0].x) > hitPos.x)
+                    {
+                        hitGreater = coords[0].x;
+                        int hitted = !(((hitPos.y > 0) && (hitGreater < 0)) || ((hitPos.y < 0) && (hitGreater > 0)));
+                        if (hitted) { hitX = hitPos; break; }
+                    }
+                    else if (abs(coords[size - 1].x) < hitPos.x)
+                    {
+                        hitLess = coords[size - 1].x;
+                        int hitted = !(((hitPos.y > 0) && (hitLess > 0)) || ((hitPos.y < 0) && (hitLess < 0)));
+                        if (hitted) { hitX = hitPos; break; }
+                    }
+                    else
+                    {
+                        for (int n = 1; n < size; n++)
+                        {
+                            if (abs(coords[n].x) > hitPos.x)
+                            {
+                                hitGreater = coords[n].x;
+                                hitLess = coords[n - 1].x;
+                            }
+                        }
+                        int hitted = !(((hitPos.y > 0) && (hitLess > 0)) || ((hitPos.y < 0) && (hitLess < 0)));
+                        if (hitted) { hitX = hitPos; break; }
+                    }
                 }
-            } // hit counting
+            }
         }
     }
     else if (direction.y < 0)
