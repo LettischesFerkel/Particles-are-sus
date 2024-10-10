@@ -62,6 +62,9 @@
     "sdl_utils.h": "c",
     "stdbool.h": "c",
     "stdlib.h": "c",
-    "common.h": "c"
-  }
+    "common.h": "c",
+    "phisika.h": "c",
+    "komunals.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }

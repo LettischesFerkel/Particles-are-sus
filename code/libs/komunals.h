@@ -11,10 +11,10 @@ typedef struct
 }vektor2i; const vektor2i nullVector2i = { 0, 0 };
 typedef struct
 {
-    char r;
-    char g;
-    char b;
-    char a;
+    char red;
+    char green;
+    char blue;
+    char alpha;
 }colour;
 
 typedef struct
@@ -25,5 +25,5 @@ typedef struct
 
 typedef struct {
     vektor2i pos;
-    colour col;
+    colour color;
 }point2i;

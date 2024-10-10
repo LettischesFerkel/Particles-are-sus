@@ -40,10 +40,20 @@ vektor2i randomDirectionVektor2I(int length)
     return result;
 }
 
-vektor2i transformUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoords)
+vektor2i transformUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoords, int fixed_precision)
 {
     vektor2i result;
-    result.x = 1;
+    if (fixed_precision >= 0)
+    {
+        result.x = (((unitCoords.x * (width >> 1))) >> fixed_precision) + (width >> 1);
+        result.y = (((unitCoords.y * (heigth >> 1))) >> fixed_precision) + (heigth >> 1);
+    }
+    else
+    {
+        result.x = (((unitCoords.x * (width >> 1))) << abs(fixed_precision)) + (width >> 1);
+        result.y = (((unitCoords.y * (heigth >> 1))) << abs(fixed_precision)) + (heigth >> 1);
+    }
+    return result;
 }
 
 int volfensteinDstFunction(worldMapVPPLM map, vektor2i viewpoint, vektor2i direction, int fixed_precision)
@@ -58,20 +68,18 @@ int volfensteinDstFunction(worldMapVPPLM map, vektor2i viewpoint, vektor2i direc
     }
 
     vektor2i hitX = nullVector2i;
+    vektor2i hitY = nullVector2i;
     if (direction.x == 0)
     {
-        int posY = viewpoint.y;
-        int posX = viewpoint.x;
-
         if (direction.y == 0) { return 0; } // susy
-        if (direction.y < 0)
+        else if (direction.y < 0)
         {
             for (int i = 0; i < size; i++)
             {
                 if (abs(coords[size - i - 1].y) < viewpoint.y) // hit found
                 {
                     // find coordiantes of ray hit
-                    vektor2i hitPos = { posX, coords[size - i - 1].y };
+                    vektor2i hitPos = { viewpoint.x, coords[size - i - 1].y };
 
                     // find closest perpendicular lines
                     int hitLess = 0;
@@ -108,10 +116,10 @@ int volfensteinDstFunction(worldMapVPPLM map, vektor2i viewpoint, vektor2i direc
         {
             for (int i = 0; i < size; i++)
             {
-                if (abs(coords[size - i - 1].y) < viewpoint.y) // hit found
+                if (abs(coords[i].y) > viewpoint.y) // hit found
                 {
                     // find coordiantes of ray hit
-                    vektor2i hitPos = { posX, coords[size - i - 1].y };
+                    vektor2i hitPos = { viewpoint.x, coords[i].y };
 
                     // find closest perpendicular lines
                     int hitLess = 0;
@@ -145,10 +153,106 @@ int volfensteinDstFunction(worldMapVPPLM map, vektor2i viewpoint, vektor2i direc
             }
         }
     }
-    else if (direction.y < 0)
+    else if (direction.x < 0)
     {
+        if (direction.y == 0)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                if (abs(coords[size - i - 1].x) < viewpoint.x) // hit found
+                {
+                    // find coordiantes of ray hit
+                    vektor2i hitPos = { coords[size - i - 1].x, viewpoint.y,  };
+
+                    // find closest perpendicular lines
+                    int hitLess = 0;
+                    int hitGreater = 0;
+                    if (abs(coords[0].y) > hitPos.y)
+                    {
+                        hitGreater = coords[0].y;
+                        int hitted = (((hitPos.x > 0) && (hitGreater < 0)) || ((hitPos.x < 0) && (hitGreater > 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                    else if (abs(coords[size - 1].y) < hitPos.y)
+                    {
+                        hitLess = coords[size - 1].y;
+                        int hitted = (((hitPos.x > 0) && (hitLess > 0)) || ((hitPos.x < 0) && (hitLess < 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                    else
+                    {
+                        for (int n = 1; n < size; n++)
+                        {
+                            if (abs(coords[n].y) > hitPos.y)
+                            {
+                                hitGreater = coords[n].y;
+                                hitLess = coords[n - 1].y;
+                            }
+                        }
+                        int hitted = (((hitPos.x > 0) && (hitLess > 0)) || ((hitPos.x < 0) && (hitLess < 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                }
+            }
+        }
+        else if (direction.y < 0)
+        {
+            
+        }
+        else
+        {
+
+        }
     }
     else
     {
+        if (direction.y == 0)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                if (abs(coords[i].x) > viewpoint.x) // hit found
+                {
+                    // find coordiantes of ray hit
+                    vektor2i hitPos = { coords[i].x, viewpoint.y,  };
+
+                    // find closest perpendicular lines
+                    int hitLess = 0;
+                    int hitGreater = 0;
+                    if (abs(coords[0].y) > hitPos.y)
+                    {
+                        hitGreater = coords[0].y;
+                        int hitted = !(((hitPos.x > 0) && (hitGreater < 0)) || ((hitPos.x < 0) && (hitGreater > 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                    else if (abs(coords[size - 1].y) < hitPos.y)
+                    {
+                        hitLess = coords[size - 1].y;
+                        int hitted = !(((hitPos.x > 0) && (hitLess > 0)) || ((hitPos.x < 0) && (hitLess < 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                    else
+                    {
+                        for (int n = 1; n < size; n++)
+                        {
+                            if (abs(coords[n].y) > hitPos.y)
+                            {
+                                hitGreater = coords[n].y;
+                                hitLess = coords[n - 1].y;
+                            }
+                        }
+                        int hitted = !(((hitPos.x > 0) && (hitLess > 0)) || ((hitPos.x < 0) && (hitLess < 0)));
+                        if (hitted) { hitY = hitPos; break; }
+                    }
+                }
+            }
+        }
+        else if (direction.y < 0)
+        {
+            
+        }
+        else
+        {
+            
+        }
     }
 }

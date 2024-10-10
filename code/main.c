@@ -21,32 +21,78 @@
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Surface* window_surface;
-int windowWidth = 600;
-int windowHeight = 400;
+int windowWidth = 1200;
+int windowHeight = 800;
 char windowName[32] = "Amogus";
 int keep_window_open = runivan;
 
-#define skaits 100
+SDL_Surface* heisenburger;
+
+#define skaits 1000
 point2i punkti[skaits];
 
 int start()
 {
-    // load textures
+    // load heisenburger
+    loadBMPImage("C:/Users/ksvaz/Documents/Skola/Programmesana/C/Particles-are-sus/code/build/res/heisenburger.bmp", &heisenburger);
+    // initialise the rest
 
-    // initialise other stuffs
-    
+    // vektor2i vektori[8] = {
+    //     { -128, 0 },
+    //     { -96, 0 },
+    //     { -64, 0 },
+    //     { -32, 0 },
+    //     { 32, 0 },
+    //     { 64, 0 },
+    //     { 96, 0 },
+    //     { 128, 0 }
+    // };
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     vektor2i position = vektori[i];
+    //     printf("\nVektor = { %d, %d } ; length = %d\n", position.x, position.y, magnitudeOfVektor2I(position));
+    //     position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, 7);
+    //     printf("Transformed Vektor = { %d, %d } ; length = %d\n", position.x, position.y, magnitudeOfVektor2I(position));
+    // }
+
     for (int i = 0; i < skaits; i++) // punktu inicializācija
     {
-        vektor2i position;
-        colour color = (colour){ 0, 0, 0, 255 }; // melns
-        punkti->pos = position;
-        punkti->col = color;
+        vektor2i position = { 300, 200 };
+        position = randomDirectionVektor2I(1024);
+        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, 10);
+        colour color = (colour){ 0, 255, 0, 255 }; // melns
+        punkti[i].pos = position;
+        //printf("\nVektor = { %d, %d } ; length = %d\n", punkti[i].pos.x, punkti[i].pos.y, magnitudeOfVektor2I(punkti[i].pos));
+        punkti[i].color = color;
     }
+    clearScreen(&renderer, (colour){ 200, 200, 200, 255 });
+    SDL_RenderPresent(renderer);
 }
 
 int update(int deltaTime)
 {
+    clearScreen(&renderer, (colour){ 200, 200, 200, 255 });
 
+    //drawPoints(&renderer, &punkti[0], skaits, 0);
+    for (int i = 1; i < skaits; i++)
+    {
+        point2i current = punkti[i];
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderDrawPoint(renderer, current.pos.x, current.pos.y);
+    }
+    
+
+    //SDL_BlitSurface(heisenburger, NULL, window_surface, NULL);
+    //SDL_UpdateWindowSurface(window);
+    
+
+    /*
+        //Render red filled quad
+        SDL_Rect fillRect = { windowWidth / 4, windowHeight / 4, windowWidth / 2, windowHeight / 2 };
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);        
+        SDL_RenderFillRect(renderer, &fillRect);
+    */
+    SDL_RenderPresent(renderer);
 }
 
 int processEvent(int eventType)
@@ -69,7 +115,7 @@ int main(int argc, char* args[])
     printf("The Sus has arised\n\n");
 
     // loga inicializācija
-    initialiseAmogus(window, renderer, window_surface, windowWidth, windowHeight, windowName);
+    initialiseAmogus(&window, &renderer, &window_surface, windowWidth, windowHeight, windowName);
 
     start();
 
@@ -80,7 +126,10 @@ int main(int argc, char* args[])
         {
             processEvent(e.type);
         }
+        //SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
         update(1);
+        //SDL_Wait(500);
+        //SDL_UpdateWindowSurface(window);
     }
 
     //fgets(inputBuffer, 64, stdin);
