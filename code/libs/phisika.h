@@ -46,12 +46,12 @@ vektor2i transformUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoo
     if (fixed_precision >= 0)
     {
         result.x = (((unitCoords.x * (width >> 1))) >> fixed_precision) + (width >> 1);
-        result.y = (((unitCoords.y * (heigth >> 1))) >> fixed_precision) + (heigth >> 1);
+        result.y = (((-unitCoords.y * (heigth >> 1))) >> fixed_precision) + (heigth >> 1);
     }
     else
     {
         result.x = (((unitCoords.x * (width >> 1))) << abs(fixed_precision)) + (width >> 1);
-        result.y = (((unitCoords.y * (heigth >> 1))) << abs(fixed_precision)) + (heigth >> 1);
+        result.y = (((-unitCoords.y * (heigth >> 1))) << abs(fixed_precision)) + (heigth >> 1);
     }
     return result;
 }

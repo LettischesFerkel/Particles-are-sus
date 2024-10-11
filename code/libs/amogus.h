@@ -29,6 +29,18 @@ int loadBMPImage(char* adress, SDL_Surface** surface)
     return EXIT_SUCCESS;
 }
 
+int loadTexture(SDL_Renderer** renderer, char* adress, SDL_Texture** texture)
+{
+    *texture = IMG_LoadTexture(*renderer, adress);
+    if(!(*texture))
+    {
+        printf("Failed to load texture '%s'\n", adress);
+        printf("SDL2 Error: %d\n",  SDL_GetError());
+        return -1;
+    }
+    return EXIT_SUCCESS;
+}
+
 int initialiseAmogus(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface** window_surface, int width, int height, char* windowName)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -37,8 +49,7 @@ int initialiseAmogus(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface**
         return -1;
     }
 
-    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_RESIZABLE || SDL_WINDOW_OPENGL);
-    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
     if(!(*window))
     {
@@ -46,25 +57,11 @@ int initialiseAmogus(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface**
         return -1;
     }
 
-    *window_surface = SDL_GetWindowSurface(*window);
-
-    if(!(*window_surface))
-    {
-        printf("Failed to get the surface from the window\n");
-        return -1;
-    }
-
-    return EXIT_SUCCESS;
-}
-
-int resizeWindow(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface** window_surface, int width, int height, char* windowName)
-{
-    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_RESIZABLE || SDL_WINDOW_OPENGL);
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 
-    if(!(*window))
+    if(!(*renderer))
     {
-        printf("Failed to create window\n");
+        printf("Failed to create renderer\n");
         return -1;
     }
 
@@ -96,7 +93,7 @@ int clearScreen(SDL_Renderer** renderer, colour fillColour)
     SDL_RenderClear(*renderer);
 }
 
-int drawLine(int height, int xPixel)
+int drawHorizontalLine(int height, int xPixel)
 {
     
 }

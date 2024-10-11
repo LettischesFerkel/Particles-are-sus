@@ -27,15 +27,29 @@ int windowHeight = 800;
 char windowName[32] = "Amogus";
 int keep_window_open = runivan;
 
-SDL_Surface* heisenburger;
+SDL_Texture* heisenburger;
+SDL_Rect heisenburgerRect;
 
 #define skaits 4096
 point2i punkti[skaits];
+vektor2i punktSakumPos[skaits];
+
+vektor2i mousePos = nullVector2i;
+int mouseButtonLeftDown = 0;
+int mouseButtonRightDown = 0;
+int mouseButtonMiddleDown = 0;
+
+vektor2i spherePos = nullVector2i;
+int sphereRadius = 100;
 
 int start()
 {
     // load heisenburger
-    loadBMPImage("C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code/build/res/heisenburger.bmp", &heisenburger);
+    loadTexture(&renderer, "build/res/heisenburger.Jpg", &heisenburger);
+    heisenburgerRect.x = 0; //the x coordinate
+    heisenburgerRect.y = 0; //the y coordinate
+    heisenburgerRect.w = 50; //the width of the texture
+    heisenburgerRect.h = 50; //the height of the texture
     // initialise the rest
 
     // vektor2i vektori[8] = {
@@ -59,7 +73,8 @@ int start()
     for (int i = 0; i < skaits; i++) // punktu inicializācija
     {
         vektor2i position = { 300, 200 };
-        position = randomDirectionVektor2I(pow(2, fixed_precision - 1), (int)(360.0 * pow(2, fixed_precision - 7)));
+        position = randomDirectionVektor2I(pow(2, fixed_precision - 0.125), (int)(360.0 * pow(2, fixed_precision - 7)));
+        punktSakumPos[i] = position;
         position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
         colour color = (colour){ 255, 255, 255, 255 }; // melns
         punkti[i].pos = position;
@@ -68,52 +83,127 @@ int start()
     }
     clearScreen(&renderer, (colour){ 0, 0, 0, 255 });
     SDL_RenderPresent(renderer);
+
+    spherePos = (vektor2i){ windowWidth >> 1, windowHeight >> 1};
+    sphereRadius = 100;
 }
 
 int update(int deltaTime)
 {
-    clearScreen(&renderer, (colour){ 0, 0, 0, 255 });
+    printf(" %3.3f FPS | ", (float)(1000.0 / (float)(deltaTime * pow(2, -fixed_precision))));
+    clearScreen(&renderer, (colour){ 100, 100, 100, 255 });
 
-    //drawPoints(&renderer, &punkti[0], skaits, 0);
-    for (int i = 1; i < skaits; i++)
+    // //drawPoints(&renderer, &punkti[0], skaits, 0);
+    // for (int i = 1; i < skaits; i++)
+    // {
+    //     point2i current = punkti[i];
+    //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //     SDL_RenderDrawPoint(renderer, current.pos.x, current.pos.y);
+    // }
+
+    if (mouseButtonLeftDown || !mouseButtonLeftDown) { spherePos = mousePos; printf("\nNew Sphere Coordinates Set\n"); }
+    int sphereRadiusSquared = pow(sphereRadius, 2);
+    vektor2i pixPos = { 0, 0 };
+    int precision = -4;
+
+    for (pixPos.y = windowHeight - 1; pixPos.y > -1; pixPos.y--) // draw sphere
     {
-        point2i current = punkti[i];
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderDrawPoint(renderer, current.pos.x, current.pos.y);
+        for (pixPos.x = 0; pixPos.x < windowWidth; pixPos.x++)
+        {
+            // calcDst
+            int distanceSquared = magnitudeSquaredOfVektor2I(subtractVektors2I(spherePos, pixPos));
+            if (distanceSquared >= sphereRadiusSquared) // pixel not in sphere
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
+            }
+            else // pixel is in sphere
+            {
+                int colorIntensity = (int)(510 * asin(sqrt(distanceSquared) / sphereRadius) / PI);
+                SDL_SetRenderDrawColor(renderer, 255 - colorIntensity, 255 - colorIntensity, 255 - colorIntensity, 255);
+                SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
+            }
+        }
     }
-    
 
-    SDL_BlitSurface(heisenburger, NULL, window_surface, NULL);
-    SDL_UpdateWindowSurface(window);
-    
+    // calcDst to mouse location
+    int distanceSquared = magnitudeSquaredOfVektor2I(subtractVektors2I(spherePos, mousePos));
+    if (distanceSquared >= sphereRadiusSquared) // pixel not in sphere
+    {
+        printf("Pointer not in sphere!\n");
+    }
+    else // pixel is in sphere
+    {
+        int colorIntensity = (int)(510 * asin(sqrt(distanceSquared) / sphereRadius) / PI);
+        printf("Intensity for given pixel : %3d of distance %d\n", colorIntensity, (int)sqrt(distanceSquared));
+    }
 
-    /*
-        //Render red filled quad
-        SDL_Rect fillRect = { windowWidth / 4, windowHeight / 4, windowWidth / 2, windowHeight / 2 };
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);        
-        SDL_RenderFillRect(renderer, &fillRect);
-    */
+    // heisenburger
+    SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
+
     SDL_RenderPresent(renderer);
 }
 
-int processEvent(int eventType)
+int resizeHandler(int width, int height)
 {
-    switch(eventType)
+    windowWidth = width;
+    windowHeight = height;
+    printf("Window resized to %d * %d\n", windowWidth, windowHeight);
+    SDL_SetWindowSize(window, windowWidth, windowHeight);
+    window_surface = SDL_GetWindowSurface(window);
+    uint32_t black = SDL_MapRGBA(window_surface->format, 0, 0, 0, 255);
+    SDL_FillRect(window_surface, NULL, black);
+    SDL_UpdateWindowSurface(window);
+
+    for (int i = 0; i < skaits; i++) // punktu pikseļkoordinātu pārrēķināšana
+    {
+        vektor2i position = punktSakumPos[i];
+        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
+        punkti[i].pos = position;
+    }
+}
+int mouseMovementHandler() {  } // empty
+
+int processEvent(SDL_Event event)
+{
+    int resized = 0;
+    int mouseMoved = 0;
+    switch(event.type)
     {
         case SDL_QUIT:
-            keep_window_open = runivan;
+            keep_window_open = ļaunādains;
             break;
         case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+            if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
-                printf("Window resized to %d * %d\n", event.window.data1, event.window.data2);
-                windowWidth = event.window.data1;
-                windowHeight = event.window.data2;
-                initialiseAmogus(&window, &renderer, &window_surface, windowWidth, windowHeight, windowName);
+                resizeHandler(event.window.data1, event.window.data2);
             }
+            break;
+        case SDL_MOUSEMOTION:
+            SDL_GetMouseState(&(mousePos.x), &(mousePos.y));
+            mouseMovementHandler();
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            if (SDL_BUTTON_LEFT == event.button.button)
+            {
+                mouseButtonLeftDown = 1;
+                //printf("LMB Down\n");
+            }
+            if (SDL_BUTTON_RIGHT == event.button.button)
+            {
+                mouseButtonRightDown = 1;
+                //printf("RMB Down\n");
+            }
+            if (SDL_BUTTON_MIDDLE == event.button.button)
+            {
+                mouseButtonMiddleDown = 1;
+                //printf("MMB Down\n");
+            }
+            break;
         default:
             break;
     }
+
     return 0;
 }
 
@@ -139,11 +229,13 @@ int main(int argc, char* args[])
         SDL_Event e;
         while(SDL_PollEvent(&e) > 0)
         {
-            processEvent(e.type);
+            processEvent(e);
         }
         //SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
         update(cpu_time_used); // deltaTime in miliocesonds
-        SDL_Wait(500);
+        mouseButtonLeftDown = 0;
+        mouseButtonRightDown = 0;
+        mouseButtonMiddleDown = 0;
         //SDL_UpdateWindowSurface(window);
         end = clock();
         if (precisionPositive) { cpu_time_used = ((int)(end - start)) << fixed_precision; }
@@ -151,6 +243,8 @@ int main(int argc, char* args[])
     }
 
     //fgets(inputBuffer, 64, stdin);
+
+    SDL_DestroyTexture(heisenburger);
 
     SDL_FreeSurface(window_surface);
     SDL_DestroyRenderer(renderer);
