@@ -1,4 +1,5 @@
 #include<math.h>
+#include<time.h>
 #include<windows.h>
 #include <stdbool.h>
 #define UNITY_BUILD 1
@@ -16,7 +17,7 @@
 #include "libs/phisika.h"
 #include "libs/amogus.h"
 
-#define fixed_precision 8
+#define fixed_precision 12
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -28,13 +29,13 @@ int keep_window_open = runivan;
 
 SDL_Surface* heisenburger;
 
-#define skaits 1000
+#define skaits 4096
 point2i punkti[skaits];
 
 int start()
 {
     // load heisenburger
-    loadBMPImage("C:/Users/ksvaz/Documents/Skola/Programmesana/C/Particles-are-sus/code/build/res/heisenburger.bmp", &heisenburger);
+    loadBMPImage("C:/Users/karlis.svaza/Documents/Sigma mindset/Particles-are-SUS/Particles-are-sus/code/build/res/heisenburger.bmp", &heisenburger);
     // initialise the rest
 
     // vektor2i vektori[8] = {
@@ -58,32 +59,32 @@ int start()
     for (int i = 0; i < skaits; i++) // punktu inicializācija
     {
         vektor2i position = { 300, 200 };
-        position = randomDirectionVektor2I(1024);
-        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, 10);
-        colour color = (colour){ 0, 255, 0, 255 }; // melns
+        position = randomDirectionVektor2I(pow(2, fixed_precision - 1), (int)(360.0 * pow(2, fixed_precision - 7)));
+        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
+        colour color = (colour){ 255, 255, 255, 255 }; // melns
         punkti[i].pos = position;
         //printf("\nVektor = { %d, %d } ; length = %d\n", punkti[i].pos.x, punkti[i].pos.y, magnitudeOfVektor2I(punkti[i].pos));
         punkti[i].color = color;
     }
-    clearScreen(&renderer, (colour){ 200, 200, 200, 255 });
+    clearScreen(&renderer, (colour){ 0, 0, 0, 255 });
     SDL_RenderPresent(renderer);
 }
 
 int update(int deltaTime)
 {
-    clearScreen(&renderer, (colour){ 200, 200, 200, 255 });
+    clearScreen(&renderer, (colour){ 0, 0, 0, 255 });
 
     //drawPoints(&renderer, &punkti[0], skaits, 0);
     for (int i = 1; i < skaits; i++)
     {
         point2i current = punkti[i];
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderDrawPoint(renderer, current.pos.x, current.pos.y);
     }
     
 
-    //SDL_BlitSurface(heisenburger, NULL, window_surface, NULL);
-    //SDL_UpdateWindowSurface(window);
+    SDL_BlitSurface(heisenburger, NULL, window_surface, NULL);
+    SDL_UpdateWindowSurface(window);
     
 
     /*
@@ -100,8 +101,16 @@ int processEvent(int eventType)
     switch(eventType)
     {
         case SDL_QUIT:
-            keep_window_open = ļaunādains;
+            keep_window_open = runivan;
             break;
+        case SDL_WINDOWEVENT:
+            if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                printf("Window resized to %d * %d\n", event.window.data1, event.window.data2);
+                windowWidth = event.window.data1;
+                windowHeight = event.window.data2;
+                initialiseAmogus(&window, &renderer, &window_surface, windowWidth, windowHeight, windowName);
+            }
         default:
             break;
     }
@@ -118,18 +127,27 @@ int main(int argc, char* args[])
     initialiseAmogus(&window, &renderer, &window_surface, windowWidth, windowHeight, windowName);
 
     start();
+    clock_t start, end;
+    int cpu_time_used = 0;
+    int precisionPositive = (fixed_precision >= 0);
+    if (precisionPositive) { cpu_time_used = 1000 << fixed_precision; }
+    else { cpu_time_used = 1000 >> abs(fixed_precision); }
 
     while (keep_window_open)
     {
+        start = clock();
         SDL_Event e;
         while(SDL_PollEvent(&e) > 0)
         {
             processEvent(e.type);
         }
         //SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
-        update(1);
-        //SDL_Wait(500);
+        update(cpu_time_used); // deltaTime in miliocesonds
+        SDL_Wait(500);
         //SDL_UpdateWindowSurface(window);
+        end = clock();
+        if (precisionPositive) { cpu_time_used = ((int)(end - start)) << fixed_precision; }
+        else { cpu_time_used = ((int)(end - start)) >> abs(fixed_precision); }
     }
 
     //fgets(inputBuffer, 64, stdin);

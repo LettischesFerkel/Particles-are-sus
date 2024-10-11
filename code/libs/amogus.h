@@ -37,7 +37,29 @@ int initialiseAmogus(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface**
         return -1;
     }
 
-    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
+    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_RESIZABLE || SDL_WINDOW_OPENGL);
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+
+    if(!(*window))
+    {
+        printf("Failed to create window\n");
+        return -1;
+    }
+
+    *window_surface = SDL_GetWindowSurface(*window);
+
+    if(!(*window_surface))
+    {
+        printf("Failed to get the surface from the window\n");
+        return -1;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int resizeWindow(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface** window_surface, int width, int height, char* windowName)
+{
+    *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_RESIZABLE || SDL_WINDOW_OPENGL);
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 
     if(!(*window))

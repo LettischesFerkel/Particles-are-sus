@@ -33,9 +33,9 @@ vektor2i normaliseVektor2I(int scalar, vektor2i vektor)
     return (vektor2i){ (vektor.x * scalar) / length, (vektor.y * scalar) / length };
 }
 
-vektor2i randomDirectionVektor2I(int length)
+vektor2i randomDirectionVektor2I(int length, int anglePrecision)
 {
-    double radians = ((double)(rand() % 360) * PI) / 180.0;
+    double radians = (double)(rand() % anglePrecision) * ((double)2.0 / anglePrecision) * PI;
     vektor2i result = { (int)((double)length * cos(radians)), (int)((double)length * sin(radians)) };
     return result;
 }
