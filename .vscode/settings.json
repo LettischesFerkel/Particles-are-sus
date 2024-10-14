@@ -64,7 +64,12 @@
     "stdlib.h": "c",
     "common.h": "c",
     "phisika.h": "c",
-    "komunals.h": "c"
+    "komunals.h": "c",
+    "array": "c",
+    "string_view": "c",
+    "format": "c",
+    "initializer_list": "c",
+    "span": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

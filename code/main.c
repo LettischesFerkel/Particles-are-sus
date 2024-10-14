@@ -42,6 +42,19 @@ int mouseButtonMiddleDown = 0;
 vektor2i spherePos = nullVector2i;
 int sphereRadius = 100;
 
+vektor2i lineCoordinates[4] =
+{
+    { -1,  -1 },
+    {  6,   4 },
+    { -8, -10 },
+    { 13,  13 }
+};
+worldMapVPPLM worldMap =
+{
+    4,
+    0
+};
+
 int start()
 {
     // load heisenburger
@@ -86,12 +99,107 @@ int start()
 
     spherePos = (vektor2i){ windowWidth >> 1, windowHeight >> 1};
     sphereRadius = 100;
+    
+    for (int i = 0; i < worldMap.count; i++)
+    {
+        lineCoordinates[i].x = lineCoordinates[i].x * 16;
+        lineCoordinates[i].y = lineCoordinates[i].y * 16;
+    }
+
+    worldMap.lineCoords = &lineCoordinates[0];
 }
 
 int update(int deltaTime)
 {
-    printf(" %3.3f FPS | ", (float)(1000.0 / (float)(deltaTime * pow(2, -fixed_precision))));
+    printf(" %3.3f FPS | \n", (float)(1000.0 / (float)(deltaTime * pow(2, -fixed_precision))));
     clearScreen(&renderer, (colour){ 100, 100, 100, 255 });
+
+    vektor2i pixPos = { 0, 0 };
+    int maxX = abs((worldMap.lineCoords + worldMap.count - 1)->x)+20; // windowWidth
+    int maxY = abs((worldMap.lineCoords + worldMap.count - 1)->y)+20; // windowHeight
+    for (pixPos.y = maxY - 1; pixPos.y > -1; pixPos.y--) // draw world map
+    {
+        for (pixPos.x = 0; pixPos.x < maxX; pixPos.x++)
+        {
+            int container = 0;
+            for (int n = 0; n < worldMap.count; n++)
+            {
+                container = (abs((worldMap.lineCoords + n)->x) == pixPos.x) || (abs((worldMap.lineCoords + n)->y) == pixPos.y);
+                if (container) { break; }
+            }
+            if (container)
+            {
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            }
+            else
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            }
+            SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
+            /*for (int n = 1; n < worldMap.count; n++)
+            {
+                int hitLess = 0;
+                int hitGreater = 0;
+                int hittedX = 0;
+                int hittedY = 0;
+                if (abs((worldMap.lineCoords + 0)->x) > pixPos.x)
+                {
+                    hitGreater = (worldMap.lineCoords + 0)->x;
+                    hittedX = (((pixPos.y > 0) && (hitGreater < 0)) || ((pixPos.y < 0) && (hitGreater > 0)));
+                }
+                else if (abs((worldMap.lineCoords + worldMap.count - 1)->x) < pixPos.x)
+                {
+                    hitLess = (worldMap.lineCoords + worldMap.count - 1)->x;
+                    hittedX = (((pixPos.y > 0) && (hitLess > 0)) || ((pixPos.y < 0) && (hitLess < 0)));
+                }
+                else
+                {
+                    for (int n = 1; n < worldMap.count; n++)
+                    {
+                        if (abs((worldMap.lineCoords + n)->x) > pixPos.x)
+                        {
+                            hitGreater = abs((worldMap.lineCoords + n)->x);
+                            hitLess = abs((worldMap.lineCoords + n - 1)->x);
+                        }
+                    }
+                    hittedX = (((pixPos.y > 0) && (hitLess > 0)) || ((pixPos.y < 0) && (hitLess < 0)));
+                }
+
+                if (abs((worldMap.lineCoords + 0)->y) > pixPos.y)
+                {
+                    hitGreater = (worldMap.lineCoords + 0)->y;
+                    hittedY = (((pixPos.x > 0) && (hitGreater < 0)) || ((pixPos.x < 0) && (hitGreater > 0)));
+                }
+                else if (abs((worldMap.lineCoords + worldMap.count - 1)->y) < pixPos.y)
+                {
+                    hitLess = (worldMap.lineCoords + worldMap.count - 1)->y;
+                    hittedY = (((pixPos.x > 0) && (hitLess > 0)) || ((pixPos.x < 0) && (hitLess < 0)));
+                }
+                else
+                {
+                    for (int n = 1; n < worldMap.count; n++)
+                    {
+                        if (abs((worldMap.lineCoords + n)->y) > pixPos.y)
+                        {
+                            hitGreater = abs((worldMap.lineCoords + n)->y);
+                            hitLess = abs((worldMap.lineCoords + n - 1)->y);
+                        }
+                    }
+                    hittedY = (((pixPos.x > 0) && (hitLess > 0)) || ((pixPos.x < 0) && (hitLess < 0)));
+                }
+
+                if (hittedY)
+                {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                }
+                SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
+            }*/
+        }
+    }
 
     // //drawPoints(&renderer, &punkti[0], skaits, 0);
     // for (int i = 1; i < skaits; i++)
@@ -101,12 +209,12 @@ int update(int deltaTime)
     //     SDL_RenderDrawPoint(renderer, current.pos.x, current.pos.y);
     // }
 
-    if (mouseButtonLeftDown || !mouseButtonLeftDown) { spherePos = mousePos; printf("\nNew Sphere Coordinates Set\n"); }
-    int sphereRadiusSquared = pow(sphereRadius, 2);
-    vektor2i pixPos = { 0, 0 };
-    int precision = -4;
+    //if (mouseButtonLeftDown || !mouseButtonLeftDown) { spherePos = mousePos; printf("\nNew Sphere Coordinates Set\n"); }
+    //int sphereRadiusSquared = pow(sphereRadius, 2);
+    //vektor2i pixPos = { 0, 0 };
+    //int precision = -4;
 
-    for (pixPos.y = windowHeight - 1; pixPos.y > -1; pixPos.y--) // draw sphere
+    /*for (pixPos.y = windowHeight - 1; pixPos.y > -1; pixPos.y--) // draw sphere
     {
         for (pixPos.x = 0; pixPos.x < windowWidth; pixPos.x++)
         {
@@ -136,10 +244,12 @@ int update(int deltaTime)
     {
         int colorIntensity = (int)(510 * asin(sqrt(distanceSquared) / sphereRadius) / PI);
         printf("Intensity for given pixel : %3d of distance %d\n", colorIntensity, (int)sqrt(distanceSquared));
-    }
+    }*/ // sphēra
+    
 
-    // heisenburger
-    SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
+
+    // // heisenburger
+    // SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
 
     SDL_RenderPresent(renderer);
 }
