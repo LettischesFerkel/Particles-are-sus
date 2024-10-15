@@ -43,6 +43,12 @@ vektor2i spherePos = nullVector2i;
 int sphereRadius = 100;
 
 vektor2i lineCoordinates[4] =
+/*{
+    { 2,  1},
+    { -3, -2 },
+    { 7, 12 },
+    { -9, - 18 }
+};*/
 {
     { -1,  -1 },
     {  6,   4 },
@@ -80,7 +86,7 @@ int start()
     // {
     //     vektor2i position = vektori[i];
     //     printf("\nVektor = { %d, %d } ; length = %d\n", position.x, position.y, magnitudeOfVektor2I(position));
-    //     position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, 7);
+    //     position = translateUnitToPixelCoordinates(windowWidth, windowHeight, position, 7);
     //     printf("Transformed Vektor = { %d, %d } ; length = %d\n", position.x, position.y, magnitudeOfVektor2I(position));
     // }
 
@@ -89,7 +95,7 @@ int start()
         vektor2i position = { 300, 200 };
         position = randomDirectionVektor2I(pow(2, fixed_precision - 0.125), (int)(360.0 * pow(2, fixed_precision - 7)));
         punktSakumPos[i] = position;
-        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
+        position = translateUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
         colour color = (colour){ 255, 255, 255, 255 }; // melns
         punkti[i].pos = position;
         //printf("\nVektor = { %d, %d } ; length = %d\n", punkti[i].pos.x, punkti[i].pos.y, magnitudeOfVektor2I(punkti[i].pos));
@@ -111,204 +117,86 @@ int start()
 }
 
 int m = 0;
+
+vektor2i playerPos = {0, 0};
 int update(int deltaTime)
 {
-    clearScreen(&renderer, (colour){ 100, 100, 100, 255 });
+    //printf(" %4.0f FPS | ", (float)(1000.0 / (float)(deltaTime * pow(2, -fixed_precision))));
 
-    vektor2i pixPos = { 0, 0 };
-    int maxX = abs((worldMap.lineCoords + worldMap.count - 1)->x)+worldScale; // windowWidth
-    int maxY = abs((worldMap.lineCoords + worldMap.count - 1)->y)+worldScale; // windowHeight
-    for (pixPos.y = maxY - 1; pixPos.y > -1; pixPos.y--) // draw world map
+    clearScreen(&renderer, (colour){ 200, 200, 200, 255 });
+
+    vektor2i max = { abs((worldMap.lineCoords + worldMap.count - 1)->x) + worldScale, abs((worldMap.lineCoords + worldMap.count - 1)->y) + worldScale };
+    for (int i = 0; i < worldMap.count; i++) // draw world map lines
     {
-        for (pixPos.x = 0; pixPos.x < maxX; pixPos.x++)
+        int xAxis = (worldMap.lineCoords + i)->x;
+        for (int y = 1; y < max.y; y++)
         {
-            int hitLess = 0;
-            int hitGreater = 0;
-            int hittedX = 0;
-            int hittedY = 0;
-            if (abs((worldMap.lineCoords + 0)->x) > pixPos.x)
+            int lesserVal;
+            int greaterVal;
+            if (abs((worldMap.lineCoords + 0)->y) > y)
             {
-                //hitGreater = (worldMap.lineCoords + 0)->x;
-                hittedX = 1;//(((pixPos.y > 0) && (hitGreater < 0)) || ((pixPos.y < 0) && (hitGreater > 0)));
+                lesserVal = 0;
+                greaterVal = (worldMap.lineCoords + 0)->y;
             }
-            else if (abs((worldMap.lineCoords + worldMap.count - 1)->x) < pixPos.x)
+            else if (abs((worldMap.lineCoords + worldMap.count - 1)->y) < y)
             {
-                //hitLess = (worldMap.lineCoords + worldMap.count - 1)->x;
-                hittedX = 1;//(((pixPos.y > 0) && (hitLess > 0)) || ((pixPos.y < 0) && (hitLess < 0)));
+                lesserVal = (worldMap.lineCoords + worldMap.count - 1)->y;
+                greaterVal = max.y;
             }
             else
             {
-                for (int n = 1; n < worldMap.count; n++)
+                for (int n = 1; n < worldMap.count - 1; n++)
                 {
-                    if (abs((worldMap.lineCoords + n)->x) > pixPos.x)
+                    int yAxis = (worldMap.lineCoords + n)->y;
+                    if (abs(yAxis) > y)
                     {
-                        hitGreater = (worldMap.lineCoords + n)->x;
-                        hitLess = (worldMap.lineCoords + n - 1)->x;
-                        break;
+                        greaterVal = yAxis;
+                        lesserVal = (worldMap.lineCoords + n - 1)->y;
                     }
                 }
-                hittedX = ((hitGreater < 0) == (hitLess > 0));
             }
+            if (xAxis > 0) { SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255); }
+            else { SDL_SetRenderDrawColor(renderer, 0 , 200, 0, 255); }
+            SDL_RenderDrawPoint(renderer, abs(xAxis) + (windowWidth >> 1) - (max.x >> 1), y + (windowHeight >> 1) - (max.y >> 1));
+        }
 
-            if (abs((worldMap.lineCoords + 0)->y) > pixPos.y)
+        int yAxis = (worldMap.lineCoords + i)->y;
+        for (int x = 1; x < max.x; x++)
+        {
+            int lesserVal;
+            int greaterVal;
+            if (abs((worldMap.lineCoords + 0)->x) > x)
             {
-                //hitGreater = (worldMap.lineCoords + 0)->y;
-                hittedY = 1;//(((pixPos.x > 0) && (hitGreater < 0)) || ((pixPos.x < 0) && (hitGreater > 0)));
+                lesserVal = 0;
+                greaterVal = (worldMap.lineCoords + 0)->x;
             }
-            else if (abs((worldMap.lineCoords + worldMap.count - 1)->y) < pixPos.y)
+            else if (abs((worldMap.lineCoords + worldMap.count - 1)->x) < x)
             {
-                //hitLess = (worldMap.lineCoords + worldMap.count - 1)->y;
-                hittedY = 1;//(((pixPos.x > 0) && (hitLess > 0)) || ((pixPos.x < 0) && (hitLess < 0)));
+                lesserVal = (worldMap.lineCoords + worldMap.count - 1)->x;
+                greaterVal = max.x;
             }
             else
             {
-                for (int n = 1; n < worldMap.count; n++)
+                for (int n = 1; n < worldMap.count - 1; n++)
                 {
-                    if (abs((worldMap.lineCoords + n)->y) > pixPos.y)
+                    int xAxis = (worldMap.lineCoords + n)->x;
+                    if (abs(xAxis) > x)
                     {
-                        hitGreater = (worldMap.lineCoords + n)->y;
-                        hitLess = (worldMap.lineCoords + n - 1)->y;
-                        break;
+                        greaterVal = xAxis;
+                        lesserVal = (worldMap.lineCoords + n - 1)->x;
                     }
                 }
-                hittedY = ((hitGreater < 0) == (hitLess > 0));
             }
-
-            if (((hitLess > 0) == hittedX) && hittedY)
-            {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-            }
-            else
-            {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            }
-            SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
-            
-            int container = 0;
-            int containerN = 0;
-            for (int n = 0; n < worldMap.count; n++)
-            {
-                container = ((worldMap.lineCoords + n)->x == pixPos.x) || ((worldMap.lineCoords + n)->y == pixPos.y);
-                containerN = (-((worldMap.lineCoords + n)->x) == pixPos.x) || (-((worldMap.lineCoords + n)->y) == pixPos.y);
-                if (container || containerN) { break; }
-            }
-            if (container)
-            {
-                SDL_SetRenderDrawColor(renderer, 100, 100, 0, 255);
-                SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
-            }
-            else if (containerN)
-            {
-                SDL_SetRenderDrawColor(renderer, 0, 100, 100, 255);
-                SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
-            }
+            if (yAxis > 0) { SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255); }
+            else { SDL_SetRenderDrawColor(renderer, 0 , 200, 0, 255); }
+            SDL_RenderDrawPoint(renderer, x + (windowWidth >> 1) - (max.x >> 1), abs(yAxis) + (windowHeight >> 1) - (max.y >> 1));
         }
     }
 
-    if (m == 1)
-    {
-        printf(" %4.0f FPS | ", (float)(1000.0 / (float)(deltaTime * pow(2, -fixed_precision))));
+    SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
+    vektor2i playerPixelPos = translateUnitToPixelCoordinates(windowWidth, windowHeight, playerPos, fixed_precision * worldScale);
+    DrawCircle(&renderer, playerPixelPos.x, playerPixelPos.y, 6);
 
-        pixPos = mousePos;
-        printf("mouse = { %4d, %4d } ", pixPos.x, pixPos.y);
-        int hitLess = 0;
-        int hitGreater = 0;
-        int hittedX = 0;
-        int hittedY = 0;
-        if (abs((worldMap.lineCoords + 0)->x) > pixPos.x)
-        {
-            hitGreater = (worldMap.lineCoords + 0)->x;
-            hittedX = 1;//(((pixPos.y > 0) && (hitGreater < 0)) || ((pixPos.y < 0) && (hitGreater > 0)));
-
-            // draw x hits
-            SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-            SDL_RenderDrawPoint(renderer, abs(hitGreater), pixPos.y);
-            printf("");
-        }
-        else if (abs((worldMap.lineCoords + worldMap.count - 1)->x) < pixPos.x)
-        {
-            hitLess = (worldMap.lineCoords + worldMap.count - 1)->x;
-            hittedX = 1;//(((pixPos.y > 0) && (hitLess > 0)) || ((pixPos.y < 0) && (hitLess < 0)));
-
-            // draw x hits
-            SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-            SDL_RenderDrawPoint(renderer, abs(hitLess), pixPos.y);
-            printf("| hits of x : { %4d, n/a } ", abs(hitLess));
-        }
-        else
-        {
-            for (int n = 1; n < worldMap.count; n++)
-            {
-                if (abs((worldMap.lineCoords + n)->x) > pixPos.x)
-                {
-                    hitGreater = (worldMap.lineCoords + n)->x;
-                    hitLess = (worldMap.lineCoords + n - 1)->x;
-
-                    // draw x hits
-                    SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-                    SDL_RenderDrawPoint(renderer, abs(hitLess), pixPos.y);
-                    SDL_RenderDrawPoint(renderer, abs(hitGreater), pixPos.y);
-                    printf("| hits of x : { %4d, %4d } ", abs(hitLess), abs(hitGreater));
-
-                    break;
-                }
-            }
-            hittedX = ((hitGreater < 0) == (hitLess > 0));
-        }
-
-        if (abs((worldMap.lineCoords + 0)->y) > pixPos.y)
-        {
-            hitGreater = (worldMap.lineCoords + 0)->y;
-            hittedY = 1;//(((pixPos.x > 0) && (hitGreater < 0)) || ((pixPos.x < 0) && (hitGreater > 0)));
-
-            // draw y hits
-            SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-            SDL_RenderDrawPoint(renderer, pixPos.x, abs(hitGreater));
-            printf("| hits of y : { n/a, %4d } \n", abs(hitGreater));
-        }
-        else if (abs((worldMap.lineCoords + worldMap.count - 1)->y) < pixPos.y)
-        {
-            hitLess = (worldMap.lineCoords + worldMap.count - 1)->y;
-            hittedY = 1;//(((pixPos.x > 0) && (hitLess > 0)) || ((pixPos.x < 0) && (hitLess < 0)));
-
-            // draw y hits
-            SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-            SDL_RenderDrawPoint(renderer, pixPos.x, abs(hitLess));
-            printf("| hits of y : { %4d, n/a } \n", abs(hitLess));
-        }
-        else
-        {
-            for (int n = 1; n < worldMap.count; n++)
-            {
-                if (abs((worldMap.lineCoords + n)->y) > pixPos.y)
-                {
-                    hitGreater = (worldMap.lineCoords + n)->y;
-                    hitLess = (worldMap.lineCoords + n - 1)->y;
-
-                    // draw y hits
-                    SDL_SetRenderDrawColor(renderer, 150, 255, 150, 255);
-                    SDL_RenderDrawPoint(renderer, pixPos.x, abs(hitLess));
-                    SDL_RenderDrawPoint(renderer, pixPos.x, abs(hitGreater));
-                    printf("| hits of y : { %4d, %4d } \n", abs(hitLess), abs(hitGreater));
-
-                    break;
-                }
-            }
-            hittedY = (((pixPos.x > 0) && (hitLess > 0)) || ((pixPos.x < 0) && (hitLess < 0)));
-        }
-
-        if (hittedY)
-        {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        }
-        SDL_RenderDrawPoint(renderer, pixPos.x, pixPos.y);
-
-        m = 0;
-    }
     // //drawPoints(&renderer, &punkti[0], skaits, 0);
     // for (int i = 1; i < skaits; i++)
     // {
@@ -352,12 +240,18 @@ int update(int deltaTime)
     {
         int colorIntensity = (int)(510 * asin(sqrt(distanceSquared) / sphereRadius) / PI);
         printf("Intensity for given pixel : %3d of distance %d\n", colorIntensity, (int)sqrt(distanceSquared));
-    }*/ // sphēra
+    } */// sphēra
     
 
 
-    // // heisenburger
-    // SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
+    // heisenburger
+
+    heisenburgerRect.w = 50;
+    heisenburgerRect.h = 50;
+    heisenburgerRect.x = windowWidth - heisenburgerRect.w;
+    heisenburgerRect.y = windowHeight - heisenburgerRect.h;
+
+    SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
     SDL_RenderPresent(renderer);
     m++;
 }
@@ -376,7 +270,7 @@ int resizeHandler(int width, int height)
     for (int i = 0; i < skaits; i++) // punktu pikseļkoordinātu pārrēķināšana
     {
         vektor2i position = punktSakumPos[i];
-        position = transformUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
+        position = translateUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
         punkti[i].pos = position;
     }
 }

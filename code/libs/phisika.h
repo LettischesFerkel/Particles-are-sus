@@ -40,7 +40,7 @@ vektor2i randomDirectionVektor2I(int length, int anglePrecision)
     return result;
 }
 
-vektor2i transformUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoords, int fixed_precision)
+vektor2i translateUnitToPixelCoordinates(int width, int heigth, vektor2i unitCoords, int fixed_precision)
 {
     vektor2i result;
     if (fixed_precision >= 0)
