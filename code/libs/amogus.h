@@ -75,7 +75,17 @@ int initialiseAmogus(SDL_Window** window, SDL_Renderer** renderer, SDL_Surface**
 
     return EXIT_SUCCESS;
 }
-
+int resizeWindow(SDL_Surface** window_surfaceP, SDL_Window** windowP, int width, int height, colour fillColor)
+{
+    printf("Window resized to %d * %d\n", width, height);
+    SDL_SetWindowSize(*windowP, width, height);
+    *window_surfaceP = SDL_GetWindowSurface(*windowP);
+    if (!(*window_surfaceP)) { printf("\nFailed to surface resized window!\n\n"); return EXIT_FAILURE; }
+    uint32_t black = SDL_MapRGBA((*window_surfaceP)->format, fillColor.red, fillColor.green, fillColor.blue, fillColor.alpha);
+    SDL_FillRect(*window_surfaceP, NULL, black);
+    SDL_UpdateWindowSurface(*windowP);
+    return EXIT_SUCCESS;
+}
 int drawPoints(SDL_Renderer** renderer, point2i* points, int count, int fixed_precision)
 {
     point2i current;

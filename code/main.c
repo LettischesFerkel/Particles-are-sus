@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include "libs/phisika.h"
 #include "libs/amogus.h"
+#include "libs/ievads.h"
 
 #define fixed_precision 12
 
@@ -35,9 +36,8 @@ point2i punkti[skaits];
 vektor2i punktSakumPos[skaits];
 
 vektor2i mousePos = nullVector2i;
-int mouseButtonLeftDown = 0;
-int mouseButtonRightDown = 0;
-int mouseButtonMiddleDown = 0;
+int mouseDown[3] = { 0, 0, 0 }; // LMB, RMB, MMB
+Sint32 keys[256];
 
 vektor2i spherePos = nullVector2i;
 int sphereRadius = 100;
@@ -116,8 +116,6 @@ int start()
     worldMap.lineCoords = &lineCoordinates[0];
 }
 
-int m = 0;
-
 vektor2i playerPos = {0, 0};
 int update(int deltaTime)
 {
@@ -192,7 +190,7 @@ int update(int deltaTime)
             SDL_RenderDrawPoint(renderer, x + (windowWidth >> 1) - (max.x >> 1), abs(yAxis) + (windowHeight >> 1) - (max.y >> 1));
         }
     }
-
+    
     SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
     vektor2i playerPixelPos = translateUnitToPixelCoordinates(windowWidth, windowHeight, playerPos, fixed_precision * worldScale);
     DrawCircle(&renderer, playerPixelPos.x, playerPixelPos.y, 6);
@@ -253,28 +251,7 @@ int update(int deltaTime)
 
     SDL_RenderCopy(renderer, heisenburger, NULL, &heisenburgerRect);
     SDL_RenderPresent(renderer);
-    m++;
 }
-
-int resizeHandler(int width, int height)
-{
-    windowWidth = width;
-    windowHeight = height;
-    printf("Window resized to %d * %d\n", windowWidth, windowHeight);
-    SDL_SetWindowSize(window, windowWidth, windowHeight);
-    window_surface = SDL_GetWindowSurface(window);
-    uint32_t black = SDL_MapRGBA(window_surface->format, 0, 0, 0, 255);
-    SDL_FillRect(window_surface, NULL, black);
-    SDL_UpdateWindowSurface(window);
-
-    for (int i = 0; i < skaits; i++) // punktu pikseļkoordinātu pārrēķināšana
-    {
-        vektor2i position = punktSakumPos[i];
-        position = translateUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
-        punkti[i].pos = position;
-    }
-}
-int mouseMovementHandler() {  } // empty
 
 int processEvent(SDL_Event event)
 {
@@ -288,29 +265,32 @@ int processEvent(SDL_Event event)
         case SDL_WINDOWEVENT:
             if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
-                resizeHandler(event.window.data1, event.window.data2);
+                windowWidth = event.window.data1;
+                windowHeight = event.window.data2;
+                resizeWindow(&window_surface, &window, windowWidth, windowHeight, (colour){ 100, 100, 100, 255 });
+
+                /*for (int i = 0; i < skaits; i++) // punktu pikseļkoordinātu pārrēķināšana
+                {
+                    vektor2i position = punktSakumPos[i];
+                    position = translateUnitToPixelCoordinates(windowWidth, windowHeight, position, fixed_precision);
+                    punkti[i].pos = position;
+                }*/
             }
             break;
         case SDL_MOUSEMOTION:
             SDL_GetMouseState(&(mousePos.x), &(mousePos.y));
-            mouseMovementHandler();
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (SDL_BUTTON_LEFT == event.button.button)
-            {
-                mouseButtonLeftDown = 1;
-                //printf("LMB Down\n");
-            }
-            if (SDL_BUTTON_RIGHT == event.button.button)
-            {
-                mouseButtonRightDown = 1;
-                //printf("RMB Down\n");
-            }
-            if (SDL_BUTTON_MIDDLE == event.button.button)
-            {
-                mouseButtonMiddleDown = 1;
-                //printf("MMB Down\n");
-            }
+            mouseButtonHandler(&mouseDown[0], 1, event.button.button);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            mouseButtonHandler(&mouseDown[0], 0, event.button.button);
+            break;
+        case SDL_KEYDOWN:
+            keyboardHandler(&keys[0], 1, event.key.keysym.sym);
+            break;
+        case SDL_KEYUP:
+            keyboardHandler(&keys[0], 0, event.key.keysym.sym);
             break;
         default:
             break;
@@ -345,9 +325,6 @@ int main(int argc, char* args[])
         }
         //SDL_FillRect(window_surface, NULL, SDL_MapRGB(window_surface->format, 0, 0, 0));
         update(cpu_time_used); // deltaTime in miliocesonds
-        mouseButtonLeftDown = 0;
-        mouseButtonRightDown = 0;
-        mouseButtonMiddleDown = 0;
         //SDL_UpdateWindowSurface(window);
         end = clock();
         if (precisionPositive) { cpu_time_used = ((int)(end - start)) << fixed_precision; }
