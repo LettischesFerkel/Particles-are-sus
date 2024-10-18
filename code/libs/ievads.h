@@ -33,7 +33,7 @@ int mouseButtonHandler(int* mouseDownP, int pressed, Uint8 button) // pressed : 
 
 int keyboardHandler(Sint32* keys, int pressed, SDL_Keycode code)
 {
-    if ((code < 128) && (code >= 0)) { printf("%d : '%c' '0x%04x'", pressed, (char)code, code); }
-    else { printf("%d : neticēsi '0x%04x'", pressed, code); }
+    if ((code < 128) && (code >= 0)) { printf("%d : '%c' '0x%04x'\n", pressed, (char)code, code); }
+    else { printf("%d : neticēsi '0x%04x'\n", pressed, code); }
     return EXIT_SUCCESS;
 }
